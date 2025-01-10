@@ -41,7 +41,7 @@ def main():
                 run(local_llm=args.local, use_local=True)
         else:
             print("Running AI-based commit message generation...")
-            run()
+            run(local_llm="")
     else:
         parser.print_help()
     
