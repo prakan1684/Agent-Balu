@@ -18,4 +18,4 @@ dependencies = [
 ]
 
 [project.scripts]
-aic = "ai_commit.cli:main"
+AgentBalu = "ai_commit.cli:main"

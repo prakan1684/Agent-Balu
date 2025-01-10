@@ -85,7 +85,7 @@ def generate_remote_message(staged_changes: str):
         }
 
         print("\n✨ Sending request to remote Llama API...")
-        response = requests.post(API_URL, json=payload, headers=headers, stream=True, timeout=30)
+        response = requests.post(API_URL, json=payload, headers=headers, stream=True)
 
         # Check for HTTP errors
         if response.status_code != 200:
@@ -129,10 +129,10 @@ def generate_remote_message(staged_changes: str):
 
 
 
-def generate_commit_message(staged_changes: str):
+def generate_commit_message(staged_changes: str, model_name : str):
     try:
         stream = ollama.chat(
-            model="llama3.1:latest",
+            model=model_name,
             messages=[
                 {
                     "role": "system",

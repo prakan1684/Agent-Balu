@@ -21,15 +21,15 @@ clean: # Clean temporary and build files
 
 setup: # Install the package globally
 	@echo "🔧 Installing the package globally..."
-	@if ! command -v pip &>/dev/null; then \
+	@if ! command -v pip3 &>/dev/null; then \
 		echo "❌ Error: 'pip' is not installed. Please install pip first."; \
 		exit 1; \
 	fi
 	@if [ "$$(id -u)" -eq 0 ]; then \
-		pip install . --break-system-packages; \
+		pip3 install . --break-system-packages; \
 	else \
 		echo "Running with sudo to ensure global installation..."; \
-		sudo -H pip install . --break-system-packages; \
+		sudo -H pip3 install . --break-system-packages; \
 	fi
 	@if [ -z "$$AI_API_KEY" ] || [ -z "$$AI_API_URL" ]; then \
 		echo "❌ Error: 'AI_API_KEY' and 'AI_API_URL' environment variables are not set."; \
@@ -41,7 +41,7 @@ setup: # Install the package globally
 		echo "   setx AI_API_URL 'https://your.api.url'"; \
 		exit 1; \
 	fi
-	@echo -e "\n✅ Installation complete! Run the following command to verify:\n\n ➡️ aic"
+	@echo -e "\n✅ Installation complete! Run the following command to verify:\n\n ➡️ AgentBalu -h"
 
 help: # Show this help
 	@egrep -h '\s#\s' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?# "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

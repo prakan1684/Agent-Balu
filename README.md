@@ -44,8 +44,8 @@ AgentBalu is not configured to be used globally in any project.
 2. Run the Tool: Simply type:
 
    ```bash
-   aic
-3. Example Output:
+   AgentBalu [command]
+3. Example Output `AgentBalu -c`:
    ```bash
    Running AI-based commit message generation...
    ✨ Generating commit message:
