@@ -1,6 +1,6 @@
 import argparse
-from ai_commit.app import run  # Import your main application logic
-from ai_commit.app import generate_commit_message
+from ai_commit.commit_agent import run  # Import your main application logic
+from ai_commit.review_agent import review_code
 def main():
     parser = argparse.ArgumentParser(description="A multifunctional AI Agent")
     
@@ -14,12 +14,12 @@ def main():
                         type=str,
                         help=(
                         "Use a remote Llama model for generating the commit message. "
-                        "Provide the model name. Common models include:\n"
-                        "  - llama2\n"
-                        "  - llama-coder\n"
-                        "  - vicuna\n\n"
-                        "To see all locally available models, run: `ollama list`.")
+                        "AgentBalu -c -l [model name]")
     )
+
+    parser.add_argument("-pr", "--pull-request", action="store_true", help="Generate a pull request desrcription")
+
+    parser.add_argument("-r", "--review", action="store_true", help="review code changes")
 
 
 
@@ -45,6 +45,12 @@ def main():
     else:
         parser.print_help()
     
+
+    if args.review:
+        review_code()
+    else:
+        parser.print_help()
+
 
 if __name__ == "__main__":
     main()

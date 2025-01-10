@@ -5,7 +5,7 @@ import ollama
 import requests
 import json
 import argparse
-
+from ai_commit.generate_llm_message import generate_message
 commands = {
     "is_git_repo": ["git", "rev-parse", "--git-dir"],
     "clear_screen": ["cls" if os.name == "nt" else "clear"],
@@ -50,7 +50,7 @@ def interaction_loop(staged_changes: str, use_local:bool, local_llm: str):
     while True:
 
         if use_local:
-            commit_message = generate_commit_message(staged_changes, model_name=local_llm)
+            commit_message = generate_message(staged_changes, model_name=local_llm, system_prompt=system_prompt)
         else:
             commit_message = generate_remote_message(staged_changes)
         #commit_message = generate_commit_message(staged_changes)
@@ -133,7 +133,7 @@ def generate_remote_message(staged_changes: str):
 
 
 
-def generate_commit_message(staged_changes: str, model_name : str):
+""" def generate_commit_message(staged_changes: str, model_name : str):
     try:
         stream = ollama.chat(
             model=model_name,
@@ -170,7 +170,7 @@ def generate_commit_message(staged_changes: str, model_name : str):
         import traceback
         traceback.print_exc()
         sys.exit(1)
-
+ """
 #runs git command in CLI
 def run_command(command: list[str] | str):
     try:
