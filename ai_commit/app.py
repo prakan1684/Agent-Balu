@@ -46,9 +46,13 @@ Concise Title Summarizing Changes
 - Rationale for key modifications
 - Impact of changes
 """
-def interaction_loop(staged_changes: str):
+def interaction_loop(staged_changes: str, use_local:bool, local_llm: str):
     while True:
-        commit_message = generate_remote_message(staged_changes)
+
+        if use_local:
+            commit_message = generate_commit_message(staged_changes, model_name=local_llm)
+        else:
+            commit_message = generate_remote_message(staged_changes)
         #commit_message = generate_commit_message(staged_changes)
         action = input("\n\nProceed to commit? [y(yes) | n[no] | r(regenerate)] ")
 
@@ -185,7 +189,7 @@ def run_command(command: list[str] | str):
 
 
 
-def run():
+def run(local_llm, use_local=False):
     try:
         # Ensure the directory is a Git repository
         run_command(commands["is_git_repo"])
@@ -198,7 +202,7 @@ def run():
             sys.exit(0)
 
         # Pass staged changes to the interaction loop
-        interaction_loop(staged_changes)
+        interaction_loop(staged_changes, use_local=use_local, local_llm=local_llm)
     except KeyboardInterrupt:
         print("\n\n❌ AI commit exited.")
 

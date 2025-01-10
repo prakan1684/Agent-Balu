@@ -38,7 +38,7 @@ def main():
                 )
             else:
                 print('Running specified local model...')
-                generate_commit_message(model_name=args.local)
+                run(local_llm=args.local, use_local=True)
         else:
             print("Running AI-based commit message generation...")
             run()

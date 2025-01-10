@@ -35,7 +35,7 @@ AgentBalu is a Python-based tool that uses AI to generate concise and informativ
    make setup
 ## Usage
 
-AgentBalu is not configured to be used globally in any project.
+AgentBalu is configured to be used globally in any project.
 
 1. Stage Your Changes: Make sure you have staged changes in your Git repository:
 
