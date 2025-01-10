@@ -25,7 +25,7 @@ AgentBalu is a Python-based tool that uses AI to generate concise and informativ
 
    #reload shell
 
-   source ~/.bashrc  # Or source ~/.zshrc
+   source ~/.bashrc  # Or source ~/.zshrc for MacOS
 3. **Environment variables for (Windows)**:
    ```bash
    $env:AI_API_KEY="your_api_key_here"

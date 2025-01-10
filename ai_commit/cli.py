@@ -22,14 +22,23 @@ def main():
     )
 
 
-    
+
     args = parser.parse_args()
 
 
     if args.commit:
         if args.local:
-            print('Running specified local model...')
-            generate_commit_message(model_name=args.local)
+            if args.local.strip()=="":
+                print(
+                "❌ Error: No Llama model name provided.\n"
+                "Use `-l [model_name]` to specify a model.\n"
+                "Common models: llama2, llama-coder, vicuna.\n"
+                "Check installed models with: `ollama list`.\n"
+                "You can download any model using `ollama pull [model name]`"
+                )
+            else:
+                print('Running specified local model...')
+                generate_commit_message(model_name=args.local)
         else:
             print("Running AI-based commit message generation...")
             run()
