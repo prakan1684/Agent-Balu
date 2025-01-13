@@ -18,42 +18,14 @@ if not API_KEY or not API_URL:
     print("❌ Error: Please set the environment variables 'AI_API_KEY' and 'AI_API_URL'")
     sys.exit(1)
 
-system_prompt = """
-You are an expert AI commit message generator specialized in creating concise, informative commit messages that follow best practices in version control.
-
-Your ONLY task is to generate a well-structured commit message based on the provided diff. The commit message must:
-1. Use a clear, descriptive title in the imperative mood (50 characters max)
-2. Provide a detailed explanation of changes in bullet points
-3. Focus solely on the technical changes in the code
-4. Use present tense and be specific about modifications
-
-Key Guidelines:
-- Analyze the entire diff comprehensively
-- Capture the essence of only MAJOR changes
-- Use technical, precise languages
-- Avoid generic or vague descriptions
-- Avoid quoting any word or sentences
-- Avoid adding description for minor changes with not much context
-- Return just the commit message, no additional text
-- Don't return more bullet points than required
-- Generate a single commit message
-
-Output Format:
-Concise Title Summarizing Changes
-
-- Specific change description
-- Another specific change description
-- Rationale for key modifications
-- Impact of changes
-"""
 def interaction_loop(staged_changes: str, use_local:bool, local_llm: str):
     while True:
 
         if use_local:
-            commit_message = generate_message(staged_changes, model_name=local_llm, system_prompt=system_prompt)
+            commit_message = generate_message(staged_changes, model_name=local_llm, prompt_name="commit_message")
         else:
             commit_message = generate_remote_message(staged_changes)
-        #commit_message = generate_commit_message(staged_changes)
+
         action = input("\n\nProceed to commit? [y(yes) | n[no] | r(regenerate)] ")
 
         match action:
@@ -132,45 +104,6 @@ def generate_remote_message(staged_changes: str):
         sys.exit(1)
 
 
-
-""" def generate_commit_message(staged_changes: str, model_name : str):
-    try:
-        stream = ollama.chat(
-            model=model_name,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": f"Here is the diff from staged changes:\n {staged_changes}",
-                },
-            ],
-            stream=True,
-        )
-
-        print("✨ Generating commit message...")
-        print("-" * 50 + "\n")
-        commit_message = ""
-        for chunk in stream:
-            if chunk["done"] is False:
-                content = chunk["message"]["content"]
-                print(content, end="", flush=True)
-                commit_message += content
-
-        if not commit_message.strip():
-            print("\n❌ No commit message generated.")
-            sys.exit(1)
-
-        return commit_message
-
-    except Exception as e:
-        print(f"❌ Error generating commit message: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
- """
 #runs git command in CLI
 def run_command(command: list[str] | str):
     try:

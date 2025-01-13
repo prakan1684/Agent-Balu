@@ -42,11 +42,8 @@ def main():
         else:
             print("Running AI-based commit message generation...")
             run(local_llm="")
-    else:
-        parser.print_help()
-    
-
-    if args.review:
+    elif args.review:
+        print("Running AI based code review...")
         review_code()
     else:
         parser.print_help()

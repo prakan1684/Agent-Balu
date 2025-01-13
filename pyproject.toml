@@ -5,6 +5,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["ai_commit"]
 
+
+[tool.setuptools.package-data]
+"ai_commit" = ["prompts/*.txt"]
+
+
 [project]
 name = "ai_commit"
 version = "0.0.1"
