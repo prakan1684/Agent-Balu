@@ -6,6 +6,7 @@ import requests
 import json
 import argparse
 from ai_commit.generate_llm_message import generate_message
+from ai_commit.utils import load_prompt
 commands = {
     "is_git_repo": ["git", "rev-parse", "--git-dir"],
     "clear_screen": ["cls" if os.name == "nt" else "clear"],
@@ -46,6 +47,7 @@ def interaction_loop(staged_changes: str, use_local:bool, local_llm: str):
 
 def generate_remote_message(staged_changes: str):
     try:
+        system_prompt = load_prompt("commit_message")
         payload = {
             "model": "llama3.2:latest",
             "messages": [
