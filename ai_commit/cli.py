@@ -43,8 +43,21 @@ def main():
             print("Running AI-based commit message generation...")
             run(local_llm="")
     elif args.review:
-        print("Running AI based code review...")
-        review_code()
+        if args.local:
+            if args.local.strip()=="":
+                print(
+                "❌ Error: No Llama model name provided.\n"
+                "Use `-l [model_name]` to specify a model.\n"
+                "Common models: llama2, llama-coder, vicuna.\n"
+                "Check installed models with: `ollama list`.\n"
+                "You can download any model using `ollama pull [model name]`"
+                )
+            else:
+                print('Running specified local model...')
+                review_code(local_llm=args.local, use_local=True)
+        else:
+            print('Running specified local model...')
+            review_code(local_llm="")
     else:
         parser.print_help()
 
