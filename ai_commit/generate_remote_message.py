@@ -29,7 +29,6 @@ def generate_remote_message(staged_changes: str, prompt_name:str):
             "Authorization": f"Bearer {API_KEY}",
         }
 
-        print(system_prompt)
         print("\n✨ Sending request to remote Llama API...")
         response = requests.post(API_URL, json=payload, headers=headers, stream=True)
 
