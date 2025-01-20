@@ -1,6 +1,7 @@
 import argparse
 from ai_commit.commit_agent import run  # Import your main application logic
 from ai_commit.review_agent import review_code
+from ai_commit.email_agent import run_email_agent
 def main():
     parser = argparse.ArgumentParser(description="A multifunctional AI Agent")
     
@@ -20,6 +21,8 @@ def main():
     parser.add_argument("-pr", "--pull-request", action="store_true", help="Generate a pull request desrcription")
 
     parser.add_argument("-r", "--review", action="store_true", help="review code changes")
+
+    parser.add_argument("-e", "--email", action="store_true", help="check spam emails and unsubscribe from recurring emails")
 
 
 
@@ -58,6 +61,9 @@ def main():
         else:
             print('Running specified local model...')
             review_code(local_llm="")
+    elif args.email:
+        run_email_agent()
+
     else:
         parser.print_help()
 
