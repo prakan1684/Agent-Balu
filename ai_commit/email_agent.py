@@ -152,8 +152,5 @@ def run_email_agent():
         lambda row: is_spam(row['Subject'], row['Body']) and has_unsubscribe_link(row), axis=1
     )
 
-    # Display emails for review
-    display_emails_for_review(email_df)
-
     # Prompt user to unsubscribe
     prompt_user_for_unsubscribe(email_df)
