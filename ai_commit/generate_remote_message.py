@@ -12,14 +12,25 @@ API_URL = os.getenv("AI_API_URL")
 
 
 
-def generate_remote_message(staged_changes: str, prompt_name:str):
+def generate_remote_message(staged_changes: str, prompt_name:str, task_type:str = None):
     try:
+        
+        if task_type == "commit":
+            user_prompt = f"Here is the diff from staged changes:\n{staged_changes}"
+        elif task_type == "review":
+            user_prompt = f"Here is the code to review:\n{staged_changes}"
+        elif task_type == "email":
+            user_prompt = f"Here is the email content:\n{staged_changes}"
+        else:
+            user_prompt = f"Here is the input:\n{staged_changes}"
+
+
         system_prompt = load_prompt(prompt_name)
         payload = {
             "model": "llama3.2:latest",
             "messages": [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Here is the diff from staged changes:\n {staged_changes}"}
+                {"role": "user", "content": user_prompt}
             ],
             "stream": True
         }

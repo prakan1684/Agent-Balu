@@ -47,7 +47,7 @@ def review_code(local_llm, use_local=False):
         if use_local:
             generate_message(staged_changes, local_llm, "code_review")
         else:
-            generate_remote_message(staged_changes, "code_review")
+            generate_remote_message(staged_changes, "code_review", "review")
 
 
     except KeyboardInterrupt:

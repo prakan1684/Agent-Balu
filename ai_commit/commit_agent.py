@@ -21,7 +21,7 @@ def interaction_loop(staged_changes: str, use_local:bool, local_llm: str):
         if use_local:
             commit_message = generate_message(staged_changes, model_name=local_llm, prompt_name="commit_message")
         else:
-            commit_message = generate_remote_message(staged_changes, "commit_message")
+            commit_message = generate_remote_message(staged_changes, "commit_message", "commit")
 
         action = input("\n\nProceed to commit? [y(yes) | n[no] | r(regenerate)] ")
 
