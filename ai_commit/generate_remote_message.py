@@ -39,8 +39,8 @@ def generate_remote_message(staged_changes: str, prompt_name:str, task_type:str 
             "Content-Type": "application/json",
             "Authorization": f"Bearer {API_KEY}",
         }
-
-        print("\n✨ Sending request to remote Llama API...")
+        AI_API_URL = os.getenv("AI_API_URL")
+        print(f"\n✨ Sending request to {AI_API_URL}...")
         response = requests.post(API_URL, json=payload, headers=headers, stream=True)
 
         # Check for HTTP errors

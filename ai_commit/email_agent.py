@@ -10,7 +10,7 @@ import chardet  # Library to detect encoding
 
 # IMAP settings for Gmail
 IMAP_SERVER = 'imap.gmail.com'
-EMAIL = 'pranavkandikonda@gmail.com'
+EMAIL = 'example@email.com'
 APP_PASSWORD = 'nnil ifgd wnjo keij'
 
 def fetch_emails_imap(days_ago=4):

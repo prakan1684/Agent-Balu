@@ -19,7 +19,9 @@ dependencies = [
     "requests>=2.25.1",      
     "argparse",              
     "ollama==0.3.3",
-    "SpeechRecognition"
+    "SpeechRecognition",
+    "pandas",
+    "chardet
 
 ]
 
