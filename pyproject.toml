@@ -5,25 +5,33 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["ai_commit"]
 
-
 [tool.setuptools.package-data]
 "ai_commit" = ["prompts/*.txt"]
 
-
 [project]
-name = "ai_commit"
-version = "0.0.1"
-description = "AI generated commit messages!"
+name = "agent-balu"
+version = "0.1.0"
+description = "A multifunctional AI Agent for Git operations, code reviews, and email management"
+authors = [
+    {name = "Prakan", email = "prakan1684@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.6"
+license = {text = "MIT"}
 
 dependencies = [
     "requests>=2.25.1",      
     "argparse",              
-    "ollama==0.3.3",
-    "SpeechRecognition",
+    "ollama>=0.1.0",
+    "SpeechRecognition>=3.8.1",
+    "PyAudio>=0.2.11",
     "pandas",
-    "chardet
-
+    "chardet"
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/prakan1684/Agent-Balu"
+"Bug Tracker" = "https://github.com/prakan1684/Agent-Balu/issues"
+
 [project.scripts]
-AgentBalu = "ai_commit.cli:main"
+ai-commit = "ai_commit.cli:main"
