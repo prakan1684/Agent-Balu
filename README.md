@@ -24,16 +24,17 @@ You can install Agent-Balu directly from GitHub with a single command:
 curl -fsSL https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | bash
 ```
 
-or
+OR
 
-````bash
+```bash
 curl -fsSL https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh -o /tmp/agent_balu_install.sh && chmod +x /tmp/agent_balu_install.sh && bash /tmp/agent_balu_install.sh
+```
 
 #### For Windows (using PowerShell):
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | iex
-````
+```
 
 This will:
 
