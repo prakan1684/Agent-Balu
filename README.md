@@ -14,6 +14,28 @@ AgentBalu is a Python-based tool that uses AI to generate concise and informativ
 
 ## Installation
 
+### Remote Installation (Recommended)
+
+You can install Agent-Balu directly from GitHub with a single command:
+
+#### For macOS/Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | bash
+```
+
+#### For Windows (using PowerShell):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | iex
+```
+
+This will:
+1. Clone the repository
+2. Prompt for your AI API credentials
+3. Install all dependencies
+4. Configure your environment
+
 ### Quick Installation
 
 You can install Agent-Balu using the provided installation scripts:
