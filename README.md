@@ -24,13 +24,19 @@ You can install Agent-Balu directly from GitHub with a single command:
 curl -fsSL https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | bash
 ```
 
+or
+
+````bash
+curl -fsSL https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh -o /tmp/agent_balu_install.sh && chmod +x /tmp/agent_balu_install.sh && bash /tmp/agent_balu_install.sh
+
 #### For Windows (using PowerShell):
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/prakan1684/Agent-Balu/master/remote_install.sh | iex
-```
+````
 
 This will:
+
 1. Clone the repository
 2. Prompt for your AI API credentials
 3. Install all dependencies
@@ -58,6 +64,7 @@ install.bat
 ```
 
 The installation scripts will:
+
 - Check for Python 3 and pip
 - Install Agent-Balu and its dependencies
 - Configure environment variables (AI_API_KEY and AI_API_URL)
@@ -94,16 +101,21 @@ AgentBalu is configured to be used globally in any project.
 
    ```bash
    git add <file>
+   ```
+
 2. Run the Tool: Simply type:
 
    ```bash
    AgentBalu [command]
+   ```
+
 3. Example Output `AgentBalu -c`:
    ```bash
    Running AI-based commit message generation...
    ✨ Generating commit message:
    - Updated logic for user authentication
    - Improved error handling for invalid inputs
+   ```
 
 ## Test Line
 
