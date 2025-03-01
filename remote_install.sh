@@ -67,18 +67,42 @@ cd "${TEMP_DIR}/Agent-Balu"
 echo -e "${BLUE}Setting up API credentials...${NC}"
 echo -e "${YELLOW}These credentials are required for Agent-Balu to function properly.${NC}"
 
-# Prompt for API key
-read -p "Enter your AI API key: " AI_API_KEY
-if [ -z "$AI_API_KEY" ]; then
-    echo -e "${RED}Error: API key cannot be empty.${NC}"
-    rm -rf "${TEMP_DIR}"
-    exit 1
-fi
+# Function to prompt for input with validation
+get_input() {
+    local prompt="$1"
+    local var_name="$2"
+    local value=""
+    local max_attempts=3
+    local attempt=1
+    
+    while [ -z "$value" ] && [ $attempt -le $max_attempts ]; do
+        read -p "$prompt" value
+        if [ -z "$value" ]; then
+            echo -e "${RED}Error: Input cannot be empty. Attempt $attempt of $max_attempts.${NC}"
+            attempt=$((attempt + 1))
+        fi
+    done
+    
+    if [ -z "$value" ]; then
+        echo -e "${RED}Error: Failed to get valid input after $max_attempts attempts.${NC}"
+        rm -rf "${TEMP_DIR}"
+        exit 1
+    fi
+    
+    eval "$var_name='$value'"
+}
 
-# Prompt for API URL
-read -p "Enter your AI API URL: " AI_API_URL
-if [ -z "$AI_API_URL" ]; then
-    echo -e "${RED}Error: API URL cannot be empty.${NC}"
+# Prompt for API URL first
+get_input "Enter your AI API URL: " AI_API_URL
+echo -e "${GREEN}API URL set successfully!${NC}"
+
+# Then prompt for API key
+get_input "Enter your AI API key: " AI_API_KEY
+echo -e "${GREEN}API key set successfully!${NC}"
+
+# Validate the inputs one more time
+if [ -z "$AI_API_URL" ] || [ -z "$AI_API_KEY" ]; then
+    echo -e "${RED}Error: Both API URL and API key must be provided.${NC}"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
@@ -93,28 +117,37 @@ else
     SHELL_CONFIG="$HOME/.profile"
 fi
 
-# Check if variables already exist in shell config
-if grep -q "export AI_API_KEY" "$SHELL_CONFIG"; then
-    echo -e "${YELLOW}AI_API_KEY already exists in $SHELL_CONFIG. Updating...${NC}"
-    # Use sed to replace the existing line
-    sed -i.bak "s|export AI_API_KEY=.*|export AI_API_KEY=\"$AI_API_KEY\"|g" "$SHELL_CONFIG"
-else
-    echo -e "${GREEN}Adding AI_API_KEY to $SHELL_CONFIG${NC}"
-    echo "export AI_API_KEY=\"$AI_API_KEY\"" >> "$SHELL_CONFIG"
-fi
+# Function to update environment variable in shell config
+update_env_var() {
+    local var_name="$1"
+    local var_value="$2"
+    local config_file="$3"
+    
+    # Escape special characters in the variable value
+    var_value=$(echo "$var_value" | sed 's/[\/&]/\\&/g')
+    
+    if grep -q "export $var_name=" "$config_file"; then
+        echo -e "${YELLOW}$var_name already exists in $config_file. Updating...${NC}"
+        # Use sed to replace the existing line
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS requires an empty string for -i
+            sed -i '' "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
+        else
+            # Linux and others
+            sed -i "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
+        fi
+    else
+        echo -e "${GREEN}Adding $var_name to $config_file${NC}"
+        echo "export $var_name=\"$var_value\"" >> "$config_file"
+    fi
+    
+    # Set for current session
+    export "$var_name"="$var_value"
+}
 
-if grep -q "export AI_API_URL" "$SHELL_CONFIG"; then
-    echo -e "${YELLOW}AI_API_URL already exists in $SHELL_CONFIG. Updating...${NC}"
-    # Use sed to replace the existing line
-    sed -i.bak "s|export AI_API_URL=.*|export AI_API_URL=\"$AI_API_URL\"|g" "$SHELL_CONFIG"
-else
-    echo -e "${GREEN}Adding AI_API_URL to $SHELL_CONFIG${NC}"
-    echo "export AI_API_URL=\"$AI_API_URL\"" >> "$SHELL_CONFIG"
-fi
-
-# Set variables for current session
-export AI_API_KEY="$AI_API_KEY"
-export AI_API_URL="$AI_API_URL"
+# Update environment variables
+update_env_var "AI_API_URL" "$AI_API_URL" "$SHELL_CONFIG"
+update_env_var "AI_API_KEY" "$AI_API_KEY" "$SHELL_CONFIG"
 
 echo -e "${GREEN}API credentials set successfully!${NC}"
 echo -e "${YELLOW}Note: You'll need to run 'source $SHELL_CONFIG' or restart your terminal for the changes to take effect in new sessions.${NC}"
