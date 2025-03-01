@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: clean check setup fix help
+.PHONY: clean check setup install-script install-windows fix help
 .DEFAULT_GOAL = help
 
 check: # Ruff check
@@ -19,7 +19,7 @@ clean: # Clean temporary and build files
 	@find . -name '__pycache__' -delete
 	@echo "✅ Clean-up complete!"
 
-setup: # Install the package globally
+setup: # Install the package globally (legacy method)
 	@echo "🔧 Installing the package globally..."
 	@if ! command -v pip3 &>/dev/null; then \
 		echo "❌ Error: 'pip' is not installed. Please install pip first."; \
@@ -41,7 +41,16 @@ setup: # Install the package globally
 		echo "   setx AI_API_URL 'https://your.api.url'"; \
 		exit 1; \
 	fi
-	@echo -e "\n✅ Installation complete! Run the following command to verify:\n\n ➡️ AgentBalu -h"
+	@echo -e "\n✅ Installation complete! Run the following command to verify:\n\n ➡️ ai-commit --help"
+
+install-script: # Install using the shell script (recommended for Unix systems)
+	@echo "🔧 Installing using the shell script..."
+	@chmod +x install.sh
+	@./install.sh
+
+install-windows: # Install using the batch script (recommended for Windows)
+	@echo "🔧 Installing using the Windows batch script..."
+	@echo "Please run install.bat from a Command Prompt or PowerShell window."
 
 help: # Show this help
 	@egrep -h '\s#\s' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?# "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

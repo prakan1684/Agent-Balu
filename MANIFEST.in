@@ -1,0 +1,3 @@
+include ai_commit/prompts/*.txt
+include README.md
+include LICENSE

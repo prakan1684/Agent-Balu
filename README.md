@@ -14,25 +14,56 @@ AgentBalu is a Python-based tool that uses AI to generate concise and informativ
 
 ## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/AgentBalu.git
-   cd AgentBalu
-2. **Setup environment variables for API_KEY and API_URL(Linux/MacOS)**:
-   ```bash
-   export AI_API_KEY="your_api_key_here"
-   export AI_API_URL="https://your.api.url"
+### Quick Installation
 
-   #reload shell
+You can install Agent-Balu using the provided installation scripts:
 
-   source ~/.bashrc  # Or source ~/.zshrc for MacOS
-3. **Environment variables for (Windows)**:
-   ```bash
-   $env:AI_API_KEY="your_api_key_here"
-   $env:AI_API_URL="https://your.api.url"
-4. **Run the makefile for seamless setup and cleanup:
-   ```bash
-   make setup
+#### For macOS/Linux:
+
+```bash
+# Make the script executable
+chmod +x install.sh
+
+# Run the installation script
+./install.sh
+```
+
+#### For Windows:
+
+```bash
+# Run the installation script
+install.bat
+```
+
+The installation scripts will:
+- Check for Python 3 and pip
+- Install Agent-Balu and its dependencies
+- Configure environment variables (AI_API_KEY and AI_API_URL)
+- Add the command to your PATH (if needed)
+
+### Manual Installation
+
+If you prefer to install manually:
+
+```bash
+# Clone the repository
+git clone https://github.com/prakan1684/Agent-Balu.git
+cd Agent-Balu
+
+# Install the package
+pip install -e . --user --break-system-packages  # On Unix systems
+pip install -e . --user                          # On Windows
+```
+
+### Environment Variables
+
+Agent-Balu requires the following environment variables:
+
+- `AI_API_KEY`: Your API key for the AI service
+- `AI_API_URL`: The URL of the AI API service
+
+You can set these variables in your shell profile or using the installation scripts.
+
 ## Usage
 
 AgentBalu is configured to be used globally in any project.
@@ -51,6 +82,10 @@ AgentBalu is configured to be used globally in any project.
    ✨ Generating commit message:
    - Updated logic for user authentication
    - Improved error handling for invalid inputs
+
+## Test Line
+
+This is a test line to verify commit message generation.
 
 ## Cleanup
 
