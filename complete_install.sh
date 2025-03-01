@@ -43,43 +43,23 @@ fi
 echo -e "${BLUE}Setting up API credentials...${NC}"
 echo -e "${YELLOW}These credentials are required for Agent-Balu to function properly.${NC}"
 
-# Function to prompt for input with validation
-get_input() {
-    local prompt="$1"
-    local var_name="$2"
-    local value=""
-    local max_attempts=3
-    local attempt=1
-    
-    while [ -z "$value" ] && [ $attempt -le $max_attempts ]; do
-        read -p "$prompt" value
-        if [ -z "$value" ]; then
-            echo -e "${RED}Error: Input cannot be empty. Attempt $attempt of $max_attempts.${NC}"
-            attempt=$((attempt + 1))
-        fi
-    done
-    
-    if [ -z "$value" ]; then
-        echo -e "${RED}Error: Failed to get valid input after $max_attempts attempts.${NC}"
-        exit 1
-    fi
-    
-    eval "$var_name='$value'"
-}
+# Simple direct input for API URL
+echo -e "${BLUE}Please enter your AI API URL:${NC}"
+read -p "> " API_API_URL
+while [ -z "$API_API_URL" ]; do
+    echo -e "${RED}Error: API URL cannot be empty. Please try again:${NC}"
+    read -p "> " API_API_URL
+done
+echo -e "${GREEN}API URL set!${NC}"
 
-# Prompt for API URL first
-get_input "Enter your AI API URL: " AI_API_URL
-echo -e "${GREEN}API URL set successfully!${NC}"
-
-# Then prompt for API key
-get_input "Enter your AI API key: " AI_API_KEY
-echo -e "${GREEN}API key set successfully!${NC}"
-
-# Validate the inputs one more time
-if [ -z "$AI_API_URL" ] || [ -z "$AI_API_KEY" ]; then
-    echo -e "${RED}Error: Both API URL and API key must be provided.${NC}"
-    exit 1
-fi
+# Simple direct input for API key
+echo -e "${BLUE}Please enter your AI API key:${NC}"
+read -p "> " AI_API_KEY
+while [ -z "$AI_API_KEY" ]; do
+    echo -e "${RED}Error: API key cannot be empty. Please try again:${NC}"
+    read -p "> " AI_API_KEY
+done
+echo -e "${GREEN}API key set!${NC}"
 
 # Determine shell configuration file
 if [[ "$SHELL" == *"zsh"* ]]; then
@@ -88,7 +68,7 @@ else
     SHELL_CONFIG="$HOME/.bashrc"
 fi
 
-# Function to update environment variable in shell config
+# Simple function to update environment variable in shell config
 update_env_var() {
     local var_name="$1"
     local var_value="$2"
@@ -117,7 +97,7 @@ update_env_var() {
 }
 
 # Update environment variables
-update_env_var "AI_API_URL" "$AI_API_URL" "$SHELL_CONFIG"
+update_env_var "AI_API_URL" "$API_API_URL" "$SHELL_CONFIG"
 update_env_var "AI_API_KEY" "$AI_API_KEY" "$SHELL_CONFIG"
 
 echo -e "${GREEN}API credentials set successfully!${NC}"
