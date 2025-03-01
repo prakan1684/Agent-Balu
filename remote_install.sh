@@ -35,7 +35,7 @@ PY_VERSION=$($PYTHON_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.v
 echo -e "${GREEN}Python version: $PY_VERSION${NC}"
 
 # Ensure Python version is at least 3.6
-if [[ "$PY_VERSION" < "3.6" ]]; then
+if [[ "$(echo "$PY_VERSION" | awk -F. '{print $1}')" -lt 3 ]] || [[ "$(echo "$PY_VERSION" | awk -F. '{print $1}')" -eq 3 && "$(echo "$PY_VERSION" | awk -F. '{print $2}')" -lt 6 ]]; then
     echo -e "${RED}Error: Python 3.6 or higher is required. Found version $PY_VERSION.${NC}"
     echo -e "${YELLOW}Please upgrade Python and try again.${NC}"
     exit 1
