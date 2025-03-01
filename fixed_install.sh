@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== Agent-Balu Quick Installation Script ===${NC}"
+echo -e "${BLUE}=== Agent-Balu Fixed Installation Script ===${NC}"
 echo -e "${BLUE}This script will install Agent-Balu directly from GitHub.${NC}"
 echo ""
 
