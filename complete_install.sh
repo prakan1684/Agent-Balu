@@ -8,8 +8,16 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=== Agent-Balu Complete Installation Script ===${NC}"
-echo -e "${BLUE}This script will install Agent-Balu and set up required environment variables.${NC}"
+echo -e "${BLUE}This script will install Agent-Balu directly from GitHub.${NC}"
 echo ""
+
+# Check for git
+echo -e "${BLUE}Checking git installation...${NC}"
+if ! command -v git &>/dev/null; then
+    echo -e "${RED}Error: git is required but not found.${NC}"
+    echo -e "${YELLOW}Please install git and try again.${NC}"
+    exit 1
+fi
 
 # Check Python installation
 echo -e "${BLUE}Checking Python installation...${NC}"
@@ -50,109 +58,124 @@ else
     fi
 fi
 
-# Prompt for API credentials
+# Create a temporary directory
+echo -e "${BLUE}Creating temporary directory...${NC}"
+TEMP_DIR=$(mktemp -d)
+echo -e "${GREEN}Created temporary directory: $TEMP_DIR${NC}"
+
+# Clone the repository
+echo -e "${BLUE}Cloning Agent-Balu repository...${NC}"
+git clone https://github.com/prakan1684/Agent-Balu.git "$TEMP_DIR/Agent-Balu"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Error: Failed to clone repository.${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Set up API credentials
 echo -e "${BLUE}Setting up API credentials...${NC}"
 echo -e "${YELLOW}These credentials are required for Agent-Balu to function properly.${NC}"
 
-# Check for existing API URL in environment
-EXISTING_API_URL=""
+# Handle API URL configuration
 if [ -n "$AI_API_URL" ]; then
-    EXISTING_API_URL="$AI_API_URL"
-    echo -e "${YELLOW}Found existing API URL in environment: $EXISTING_API_URL${NC}"
+    echo -e "${GREEN}Found existing API URL in environment: $AI_API_URL${NC}"
     echo -e "${YELLOW}You can press Enter to keep this value or enter a new one.${NC}"
 fi
 
-# Prompt for API URL
-echo -e "${BLUE}Please enter your AI API URL:${NC}"
-if [ -n "$EXISTING_API_URL" ]; then
-    echo -e "${YELLOW}[Current: $EXISTING_API_URL]${NC}"
-fi
-read -p "> " INPUT_API_URL
+# Always prompt for API URL
+read -p "Please enter your AI API URL:
+[Current: ${AI_API_URL:-None}] > " API_API_URL
 
 # Use existing value if input is empty
-if [ -z "$INPUT_API_URL" ] && [ -n "$EXISTING_API_URL" ]; then
-    API_API_URL="$EXISTING_API_URL"
-    echo -e "${GREEN}Keeping existing API URL.${NC}"
-else
-    # Otherwise, require a non-empty value
-    API_API_URL="$INPUT_API_URL"
-    while [ -z "$API_API_URL" ]; do
-        echo -e "${RED}Error: API URL cannot be empty. Please try again:${NC}"
-        read -p "> " API_API_URL
-    done
+if [ -z "$API_API_URL" ]; then
+    if [ -n "$AI_API_URL" ]; then
+        API_API_URL="$AI_API_URL"
+        echo -e "${GREEN}Keeping existing API URL.${NC}"
+    else
+        # Loop until we get a non-empty value
+        while [ -z "$API_API_URL" ]; do
+            echo -e "${RED}Error: API URL cannot be empty. Please try again:${NC}"
+            read -p "Please enter your AI API URL: " API_API_URL
+        done
+    fi
 fi
+
 echo -e "${GREEN}API URL set to: $API_API_URL${NC}"
 
-# Check for existing API key in environment
-EXISTING_API_KEY=""
+# Handle API Key configuration
 if [ -n "$AI_API_KEY" ]; then
-    EXISTING_API_KEY="$AI_API_KEY"
-    echo -e "${YELLOW}Found existing API key in environment.${NC}"
+    # Mask the API key to show only first and last 5 characters
+    if [ ${#AI_API_KEY} -gt 10 ]; then
+        MASKED_KEY="${AI_API_KEY:0:5}...${AI_API_KEY: -5}"
+    else
+        MASKED_KEY="$AI_API_KEY"
+    fi
+    echo -e "${GREEN}Found existing API key in environment.${NC}"
     echo -e "${YELLOW}You can press Enter to keep this value or enter a new one.${NC}"
 fi
 
-# Prompt for API key
-echo -e "${BLUE}Please enter your AI API key:${NC}"
-if [ -n "$EXISTING_API_KEY" ]; then
-    echo -e "${YELLOW}[Current: $(echo $EXISTING_API_KEY | cut -c1-5)...$(echo $EXISTING_API_KEY | cut -c-5)]${NC}"
-fi
-read -p "> " INPUT_API_KEY
+# Always prompt for API Key
+read -p "Please enter your AI API key:
+[Current: ${MASKED_KEY:-None}] > " API_KEY
 
 # Use existing value if input is empty
-if [ -z "$INPUT_API_KEY" ] && [ -n "$EXISTING_API_KEY" ]; then
-    AI_API_KEY="$EXISTING_API_KEY"
-    echo -e "${GREEN}Keeping existing API key.${NC}"
-else
-    # Otherwise, require a non-empty value
-    AI_API_KEY="$INPUT_API_KEY"
-    while [ -z "$AI_API_KEY" ]; do
-        echo -e "${RED}Error: API key cannot be empty. Please try again:${NC}"
-        read -p "> " AI_API_KEY
-    done
+if [ -z "$API_KEY" ]; then
+    if [ -n "$AI_API_KEY" ]; then
+        API_KEY="$AI_API_KEY"
+        echo -e "${GREEN}Keeping existing API key.${NC}"
+    else
+        # Loop until we get a non-empty value
+        while [ -z "$API_KEY" ]; do
+            echo -e "${RED}Error: API key cannot be empty. Please try again:${NC}"
+            read -p "Please enter your AI API key: " API_KEY
+        done
+    fi
 fi
+
 echo -e "${GREEN}API key set!${NC}"
 
 # Determine shell configuration file
-if [[ "$SHELL" == *"zsh"* ]]; then
+SHELL_CONFIG=""
+if [ -f "$HOME/.zshrc" ]; then
     SHELL_CONFIG="$HOME/.zshrc"
-elif [[ "$SHELL" == *"bash"* ]]; then
+elif [ -f "$HOME/.bashrc" ]; then
     SHELL_CONFIG="$HOME/.bashrc"
+elif [ -f "$HOME/.profile" ]; then
+    SHELL_CONFIG="$HOME/.profile"
 else
-    # Default to .profile if shell is not recognized
+    echo -e "${YELLOW}Could not find shell configuration file. Creating .profile...${NC}"
+    touch "$HOME/.profile"
     SHELL_CONFIG="$HOME/.profile"
 fi
 
-# Simple function to update environment variable in shell config
+# Function to update environment variables
 update_env_var() {
     local var_name="$1"
     local var_value="$2"
     local config_file="$3"
     
-    # Escape special characters in the variable value
-    var_value=$(echo "$var_value" | sed 's/[\/&]/\\&/g')
-    
+    # Check if the variable already exists in the file
     if grep -q "export $var_name=" "$config_file"; then
+        # Update existing variable
         echo -e "${YELLOW}$var_name already exists in $config_file. Updating...${NC}"
-        # Use sed to replace the existing line
+        # Use different sed syntax based on OS
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS requires an empty string for -i
             sed -i '' "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
         else
-            # Linux and others
+            # Linux doesn't
             sed -i "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
         fi
     else
-        echo -e "${GREEN}Adding $var_name to $config_file${NC}"
+        # Add new variable
+        echo -e "${YELLOW}Adding $var_name to $config_file...${NC}"
         echo "export $var_name=\"$var_value\"" >> "$config_file"
     fi
-    
-    # Set for current session
-    export "$var_name"="$var_value"
 }
 
 # Update environment variables
 update_env_var "AI_API_URL" "$API_API_URL" "$SHELL_CONFIG"
-update_env_var "AI_API_KEY" "$AI_API_KEY" "$SHELL_CONFIG"
+update_env_var "AI_API_KEY" "$API_KEY" "$SHELL_CONFIG"
 
 echo -e "${GREEN}API credentials set successfully!${NC}"
 echo -e "${YELLOW}Note: You'll need to run 'source $SHELL_CONFIG' or restart your terminal for the changes to take effect in new sessions.${NC}"
@@ -214,7 +237,7 @@ $PIP_CMD install --upgrade numpy pandas requests argparse chardet --user
 
 # Install ollama if needed
 echo -e "${BLUE}Checking for ollama...${NC}"
-if ! command -v ollama &>/dev/null; then
+if ! $PYTHON_CMD -c "import ollama" &>/dev/null; then
     echo -e "${YELLOW}Ollama not found. Installing ollama package...${NC}"
     $PIP_CMD install --upgrade ollama --user
 fi
@@ -225,12 +248,9 @@ $PIP_CMD install --upgrade SpeechRecognition --user
 
 # Install the package
 echo -e "${BLUE}Installing Agent-Balu...${NC}"
+cd "$TEMP_DIR/Agent-Balu"
 
-# Find the correct bin directory
-USER_BIN_PATH="$HOME/.local/bin"
-
-# Determine installation flags based on voice support
-if $INSTALL_VOICE; then
+if [ "$INSTALL_VOICE" = true ]; then
     echo -e "${BLUE}Installing Agent-Balu with voice support...${NC}"
     $PIP_CMD install -e ".[voice]" --user
 else
@@ -238,69 +258,62 @@ else
     $PIP_CMD install -e . --user
 fi
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Agent-Balu installed successfully!${NC}"
-else
-    echo -e "${RED}Installation failed.${NC}"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Error: Installation failed.${NC}"
+    rm -rf "$TEMP_DIR"
     exit 1
 fi
 
-# Add to PATH if needed
+# Add user bin directory to PATH if needed
+USER_BIN_PATH=$(python3 -m site --user-base)/bin
 if [[ ":$PATH:" != *":$USER_BIN_PATH:"* ]]; then
     echo -e "${YELLOW}Adding Python user bin directory to PATH...${NC}"
     
     if grep -q "export PATH=\"$USER_BIN_PATH:\$PATH\"" "$SHELL_CONFIG"; then
         echo -e "${YELLOW}PATH entry already exists in $SHELL_CONFIG.${NC}"
     else
-        echo -e "${GREEN}Adding $USER_BIN_PATH to PATH in $SHELL_CONFIG${NC}"
+        echo -e "${YELLOW}Adding PATH entry to $SHELL_CONFIG...${NC}"
         echo "export PATH=\"$USER_BIN_PATH:\$PATH\"" >> "$SHELL_CONFIG"
     fi
     
-    # Set for current session
+    # Update current PATH
     export PATH="$USER_BIN_PATH:$PATH"
-    
-    echo -e "${YELLOW}Note: You'll need to run 'source $SHELL_CONFIG' or restart your terminal for the PATH changes to take effect in new sessions.${NC}"
-else
-    echo -e "${GREEN}Python user bin directory is already in PATH.${NC}"
 fi
+
+# Clean up
+echo -e "${BLUE}Cleaning up...${NC}"
+rm -rf "$TEMP_DIR"
 
 # Display usage information
-echo -e "${BLUE}Agent-Balu has been installed. Here's how to use it:${NC}"
-echo -e "${GREEN}Generate commit message:${NC} ai-commit --commit"
-echo -e "${GREEN}Review code:${NC} ai-commit --review"
-echo -e "${GREEN}Email management:${NC} ai-commit --email"
-if $INSTALL_VOICE; then
-    echo -e "${GREEN}Voice interaction:${NC} ai-commit --voice"
+echo -e "${GREEN}Agent-Balu has been installed successfully!${NC}"
+echo -e "${BLUE}Here's how to use it:${NC}"
+echo -e "${YELLOW}Generate commit message: ${GREEN}ai-commit --commit${NC}"
+echo -e "${YELLOW}Review code: ${GREEN}ai-commit --review${NC}"
+echo -e "${YELLOW}Email management: ${GREEN}ai-commit --email${NC}"
+if [ "$INSTALL_VOICE" = true ]; then
+    echo -e "${YELLOW}Voice interaction: ${GREEN}ai-commit --voice${NC}"
 fi
-echo -e "${GREEN}Use local model:${NC} ai-commit --commit --local llama2"
-echo ""
-echo -e "${YELLOW}For more information, run:${NC} ai-commit --help"
-echo ""
-echo -e "${GREEN}Installation complete!${NC}"
-
-# Source the shell config to make changes available immediately
-echo -e "${BLUE}Activating environment variables...${NC}"
-if [ -f "$SHELL_CONFIG" ]; then
-    source "$SHELL_CONFIG"
-    echo -e "${GREEN}Environment activated!${NC}"
-else
-    echo -e "${YELLOW}Could not source $SHELL_CONFIG. You may need to restart your terminal.${NC}"
-fi
+echo -e "${YELLOW}Use local model: ${GREEN}ai-commit --commit --local llama2${NC}"
+echo -e ""
+echo -e "${BLUE}For more information, run: ${GREEN}ai-commit --help${NC}"
 
 # Verify installation
 echo -e "${BLUE}Verifying installation...${NC}"
 if command -v ai-commit &>/dev/null; then
     echo -e "${GREEN}ai-commit command is available!${NC}"
-    ai-commit --help
 else
     echo -e "${YELLOW}ai-commit command not found in current PATH.${NC}"
-    echo -e "${YELLOW}You may need to run:${NC} source $SHELL_CONFIG"
-    echo -e "${YELLOW}Or manually run:${NC} $USER_BIN_PATH/ai-commit --help"
+    echo -e "${YELLOW}You may need to run 'source $SHELL_CONFIG' or restart your terminal for the changes to take effect.${NC}"
     
     # Try to find the command
-    FOUND_CMD=$(find $HOME -name ai-commit -type f 2>/dev/null | head -n 1)
-    if [ -n "$FOUND_CMD" ]; then
-        echo -e "${GREEN}Found ai-commit at: $FOUND_CMD${NC}"
-        echo -e "${YELLOW}You can run it directly with:${NC} $FOUND_CMD --help"
+    COMMAND_PATH=$(find "$HOME" -name ai-commit -type f -executable 2>/dev/null | head -n 1)
+    if [ -n "$COMMAND_PATH" ]; then
+        echo -e "${GREEN}Found ai-commit at: $COMMAND_PATH${NC}"
+        echo -e "${YELLOW}You can run it directly with: ${GREEN}\"$COMMAND_PATH\" --help${NC}"
+    else
+        echo -e "${RED}Could not find ai-commit in your home directory.${NC}"
+        echo -e "${YELLOW}Please check if the installation was successful.${NC}"
     fi
 fi
+
+echo -e "${GREEN}Installation complete!${NC}"
