@@ -24,10 +24,12 @@ dependencies = [
     "argparse",              
     "ollama>=0.1.0",
     "SpeechRecognition>=3.8.1",
-    "PyAudio>=0.2.11",
     "pandas",
     "chardet"
 ]
+
+[project.optional-dependencies]
+voice = ["PyAudio>=0.2.11"]
 
 [project.urls]
 "Homepage" = "https://github.com/prakan1684/Agent-Balu"
