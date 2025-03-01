@@ -96,15 +96,18 @@ install_agent_balu() {
         
         # Update pip in the virtual environment
         $PIP_CMD install --upgrade pip
-    fi
-    
-    # Install the package
-    if [[ "$OS" == "Windows" ]]; then
-        # On Windows, we don't use --break-system-packages
-        $PIP_CMD install -e . --user
+        
+        # In virtual environment, don't use --user flag
+        $PIP_CMD install -e .
     else
-        # On Unix systems, we use --break-system-packages for global installation
-        $PIP_CMD install -e . --user --break-system-packages
+        # Outside virtual environment, use --user flag
+        if [[ "$OS" == "Windows" ]]; then
+            # On Windows, we don't use --break-system-packages
+            $PIP_CMD install -e . --user
+        else
+            # On Unix systems, we use --break-system-packages for global installation
+            $PIP_CMD install -e . --user --break-system-packages
+        fi
     fi
     
     if [ $? -eq 0 ]; then

@@ -53,7 +53,14 @@ if /i "%USE_VENV%"=="y" (
 
 :: Install Agent-Balu
 echo Installing Agent-Balu and dependencies...
-python -m pip install -e . --user
+
+if /i "%USE_VENV%"=="y" (
+    :: In virtual environment, don't use --user flag
+    python -m pip install -e .
+) else (
+    :: Outside virtual environment, use --user flag
+    python -m pip install -e . --user
+)
 
 if %ERRORLEVEL% neq 0 (
     echo Error: Installation failed.
