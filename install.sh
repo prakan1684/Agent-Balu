@@ -11,239 +11,173 @@ echo -e "${BLUE}=== Agent-Balu Installation Script ===${NC}"
 echo -e "${BLUE}This script will install Agent-Balu globally on your system.${NC}"
 echo ""
 
-# Function to check if a command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Detect OS
-detect_os() {
-    case "$(uname -s)" in
-        Linux*)     OS="Linux";;
-        Darwin*)    OS="macOS";;
-        CYGWIN*)    OS="Windows";;
-        MINGW*)     OS="Windows";;
-        MSYS*)      OS="Windows";;
-        *)          OS="Unknown";;
-    esac
-    echo -e "${BLUE}Detected OS: ${OS}${NC}"
-}
-
-# Check Python installation
-check_python() {
-    echo -e "${BLUE}Checking Python installation...${NC}"
-    
-    if command_exists python3; then
-        PYTHON_CMD="python3"
-    elif command_exists python; then
-        # Check if python is Python 3
-        PY_VERSION=$(python --version 2>&1)
-        if [[ $PY_VERSION == *"Python 3"* ]]; then
-            PYTHON_CMD="python"
-        else
-            echo -e "${RED}Error: Python 3 is required but not found.${NC}"
-            echo -e "${YELLOW}Please install Python 3 and try again.${NC}"
-            exit 1
-        fi
-    else
-        echo -e "${RED}Error: Python 3 is required but not found.${NC}"
-        echo -e "${YELLOW}Please install Python 3 and try again.${NC}"
-        exit 1
-    fi
-    
+# Check for Python
+echo -e "${BLUE}Checking Python installation...${NC}"
+if command -v python3 &>/dev/null; then
+    PYTHON_CMD="python3"
     echo -e "${GREEN}Found Python: $($PYTHON_CMD --version)${NC}"
-}
+else
+    echo -e "${RED}Error: Python 3 is required but not found.${NC}"
+    echo -e "${YELLOW}Please install Python 3 and try again.${NC}"
+    exit 1
+fi
+
+# Check Python version
+PY_VERSION=$($PYTHON_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+echo -e "${GREEN}Python version: $PY_VERSION${NC}"
+
+# Ensure Python version is at least 3.8
+if [[ "$(echo "$PY_VERSION" | awk -F. '{print $1}')" -lt 3 ]] || [[ "$(echo "$PY_VERSION" | awk -F. '{print $1}')" -eq 3 && "$(echo "$PY_VERSION" | awk -F. '{print $2}')" -lt 8 ]]; then
+    echo -e "${RED}Error: Python 3.8 or higher is required. Found version $PY_VERSION.${NC}"
+    echo -e "${YELLOW}Please upgrade Python and try again.${NC}"
+    exit 1
+fi
 
 # Check pip installation
-check_pip() {
-    echo -e "${BLUE}Checking pip installation...${NC}"
-    
-    if command_exists pip3; then
-        PIP_CMD="pip3"
-    elif command_exists pip; then
-        PIP_CMD="pip"
-    else
-        echo -e "${YELLOW}pip not found. Attempting to install pip...${NC}"
-        $PYTHON_CMD -m ensurepip --upgrade
-        if command_exists pip3; then
-            PIP_CMD="pip3"
-        elif command_exists pip; then
-            PIP_CMD="pip"
-        else
-            echo -e "${RED}Error: Failed to install pip.${NC}"
-            exit 1
-        fi
-    fi
-    
+echo -e "${BLUE}Checking pip installation...${NC}"
+if command -v pip3 &>/dev/null; then
+    PIP_CMD="pip3"
     echo -e "${GREEN}Found pip: $($PIP_CMD --version)${NC}"
-}
-
-# Install dependencies and Agent-Balu
-install_agent_balu() {
-    echo -e "${BLUE}Installing Agent-Balu and dependencies...${NC}"
-    
-    # Create a virtual environment if requested
-    if [[ "$USE_VENV" == "yes" ]]; then
-        echo -e "${BLUE}Creating virtual environment...${NC}"
-        $PYTHON_CMD -m venv venv
-        
-        # Activate the virtual environment based on OS
-        if [[ "$OS" == "Windows" ]]; then
-            source venv/Scripts/activate
-        else
-            source venv/bin/activate
-        fi
-        
-        # Update pip in the virtual environment
-        $PIP_CMD install --upgrade pip
-        
-        # In virtual environment, don't use --user flag
-        $PIP_CMD install -e .
+else
+    echo -e "${YELLOW}pip not found. Attempting to install pip...${NC}"
+    $PYTHON_CMD -m ensurepip --upgrade
+    if command -v pip3 &>/dev/null; then
+        PIP_CMD="pip3"
+        echo -e "${GREEN}Found pip: $($PIP_CMD --version)${NC}"
     else
-        # Outside virtual environment, use --user flag
-        if [[ "$OS" == "Windows" ]]; then
-            # On Windows, we don't use --break-system-packages
-            $PIP_CMD install -e . --user
-        else
-            # On Unix systems, we use --break-system-packages for global installation
-            $PIP_CMD install -e . --user --break-system-packages
-        fi
-    fi
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}Agent-Balu installed successfully!${NC}"
-    else
-        echo -e "${RED}Installation failed.${NC}"
+        echo -e "${RED}Error: Failed to install pip.${NC}"
         exit 1
     fi
-}
+fi
 
-# Configure environment variables
-configure_env() {
-    echo -e "${BLUE}Configuring environment variables...${NC}"
-    
-    # Check if API key is already set
-    if [ -z "$AI_API_KEY" ]; then
-        echo -e "${YELLOW}AI_API_KEY environment variable is not set.${NC}"
-        read -p "Would you like to set it now? (y/n): " SET_API_KEY
-        
-        if [[ "$SET_API_KEY" == "y" || "$SET_API_KEY" == "Y" ]]; then
-            read -p "Enter your AI API key: " API_KEY
-            
-            # Determine the shell configuration file
-            if [[ "$OS" == "macOS" || "$OS" == "Linux" ]]; then
-                if [[ "$SHELL" == *"zsh"* ]]; then
-                    SHELL_CONFIG="$HOME/.zshrc"
-                else
-                    SHELL_CONFIG="$HOME/.bashrc"
-                fi
-                
-                # Add environment variable to shell config
-                echo "export AI_API_KEY=\"$API_KEY\"" >> "$SHELL_CONFIG"
-                echo -e "${GREEN}Added AI_API_KEY to $SHELL_CONFIG${NC}"
-                echo -e "${YELLOW}Please run 'source $SHELL_CONFIG' to apply changes.${NC}"
-            elif [[ "$OS" == "Windows" ]]; then
-                echo -e "${YELLOW}On Windows, please set the environment variable manually:${NC}"
-                echo -e "${YELLOW}1. Right-click on 'This PC' and select 'Properties'${NC}"
-                echo -e "${YELLOW}2. Click on 'Advanced system settings'${NC}"
-                echo -e "${YELLOW}3. Click on 'Environment Variables'${NC}"
-                echo -e "${YELLOW}4. Add a new user variable named 'AI_API_KEY' with your API key${NC}"
-            fi
-        fi
-    else
-        echo -e "${GREEN}AI_API_KEY is already set.${NC}"
-    fi
-    
-    # Check if API URL is already set
-    if [ -z "$AI_API_URL" ]; then
-        echo -e "${YELLOW}AI_API_URL environment variable is not set.${NC}"
-        read -p "Would you like to set it now? (y/n): " SET_API_URL
-        
-        if [[ "$SET_API_URL" == "y" || "$SET_API_URL" == "Y" ]]; then
-            read -p "Enter your AI API URL: " API_URL
-            
-            # Determine the shell configuration file
-            if [[ "$OS" == "macOS" || "$OS" == "Linux" ]]; then
-                if [[ "$SHELL" == *"zsh"* ]]; then
-                    SHELL_CONFIG="$HOME/.zshrc"
-                else
-                    SHELL_CONFIG="$HOME/.bashrc"
-                fi
-                
-                # Add environment variable to shell config
-                echo "export AI_API_URL=\"$API_URL\"" >> "$SHELL_CONFIG"
-                echo -e "${GREEN}Added AI_API_URL to $SHELL_CONFIG${NC}"
-                echo -e "${YELLOW}Please run 'source $SHELL_CONFIG' to apply changes.${NC}"
-            elif [[ "$OS" == "Windows" ]]; then
-                echo -e "${YELLOW}On Windows, please set the environment variable manually:${NC}"
-                echo -e "${YELLOW}1. Right-click on 'This PC' and select 'Properties'${NC}"
-                echo -e "${YELLOW}2. Click on 'Advanced system settings'${NC}"
-                echo -e "${YELLOW}3. Click on 'Environment Variables'${NC}"
-                echo -e "${YELLOW}4. Add a new user variable named 'AI_API_URL' with your API URL${NC}"
-            fi
-        fi
-    else
-        echo -e "${GREEN}AI_API_URL is already set.${NC}"
-    fi
-}
+# Install dependencies
+echo -e "${BLUE}Installing dependencies...${NC}"
+$PIP_CMD install --upgrade pip
+$PIP_CMD install ollama requests SpeechRecognition
 
-# Add to PATH (if needed)
-add_to_path() {
-    if [[ "$OS" == "Windows" ]]; then
-        echo -e "${YELLOW}On Windows, please ensure the Python Scripts directory is in your PATH.${NC}"
+# Set up API credentials
+echo -e "${BLUE}Setting up API credentials...${NC}"
+echo -e "${YELLOW}These credentials are required for Agent-Balu to function properly.${NC}"
+
+# Handle API URL configuration
+if [ -n "$AI_API_URL" ]; then
+    echo -e "${GREEN}Found existing API URL in environment: $AI_API_URL${NC}"
+    echo -e "${YELLOW}You can press Enter to keep this value or enter a new one.${NC}"
+fi
+
+# Always prompt for API URL
+read -p "Please enter your AI API URL:
+[Current: ${AI_API_URL:-None}] > " API_API_URL
+
+# Use existing value if input is empty
+if [ -z "$API_API_URL" ]; then
+    if [ -n "$AI_API_URL" ]; then
+        API_API_URL="$AI_API_URL"
+        echo -e "${GREEN}Keeping existing API URL.${NC}"
     else
-        # Check if ~/.local/bin is in PATH
-        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-            echo -e "${YELLOW}Adding ~/.local/bin to PATH...${NC}"
-            
-            if [[ "$SHELL" == *"zsh"* ]]; then
-                SHELL_CONFIG="$HOME/.zshrc"
-            else
-                SHELL_CONFIG="$HOME/.bashrc"
-            fi
-            
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
-            echo -e "${GREEN}Added ~/.local/bin to PATH in $SHELL_CONFIG${NC}"
-            echo -e "${YELLOW}Please run 'source $SHELL_CONFIG' to apply changes.${NC}"
+        # Loop until we get a non-empty value
+        while [ -z "$API_API_URL" ]; do
+            echo -e "${RED}Error: API URL cannot be empty. Please try again:${NC}"
+            read -p "Please enter your AI API URL: " API_API_URL
+        done
+    fi
+fi
+
+echo -e "${GREEN}API URL set to: $API_API_URL${NC}"
+
+# Handle API Key configuration
+if [ -n "$AI_API_KEY" ]; then
+    # Mask the API key to show only first and last 5 characters
+    if [ ${#AI_API_KEY} -gt 10 ]; then
+        MASKED_KEY="${AI_API_KEY:0:5}...${AI_API_KEY: -5}"
+    else
+        MASKED_KEY="$AI_API_KEY"
+    fi
+    echo -e "${GREEN}Found existing API key in environment.${NC}"
+    echo -e "${YELLOW}You can press Enter to keep this value or enter a new one.${NC}"
+fi
+
+# Always prompt for API Key
+read -p "Please enter your AI API key:
+[Current: ${MASKED_KEY:-None}] > " API_KEY
+
+# Use existing value if input is empty
+if [ -z "$API_KEY" ]; then
+    if [ -n "$AI_API_KEY" ]; then
+        API_KEY="$AI_API_KEY"
+        echo -e "${GREEN}Keeping existing API key.${NC}"
+    else
+        # Loop until we get a non-empty value
+        while [ -z "$API_KEY" ]; do
+            echo -e "${RED}Error: API key cannot be empty. Please try again:${NC}"
+            read -p "Please enter your AI API key: " API_KEY
+        done
+    fi
+fi
+
+echo -e "${GREEN}API key set!${NC}"
+
+# Determine shell configuration file
+SHELL_CONFIG=""
+if [ -f "$HOME/.zshrc" ]; then
+    SHELL_CONFIG="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then
+    SHELL_CONFIG="$HOME/.bashrc"
+elif [ -f "$HOME/.profile" ]; then
+    SHELL_CONFIG="$HOME/.profile"
+else
+    echo -e "${YELLOW}Could not find shell configuration file. Creating .profile...${NC}"
+    touch "$HOME/.profile"
+    SHELL_CONFIG="$HOME/.profile"
+fi
+
+# Function to update environment variables
+update_env_var() {
+    local var_name="$1"
+    local var_value="$2"
+    local config_file="$3"
+    
+    # Check if the variable already exists in the file
+    if grep -q "export $var_name=" "$config_file"; then
+        # Update existing variable
+        echo -e "${YELLOW}$var_name already exists in $config_file. Updating...${NC}"
+        # Use different sed syntax based on OS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS requires an empty string for -i
+            sed -i '' "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
         else
-            echo -e "${GREEN}~/.local/bin is already in PATH.${NC}"
+            # Linux doesn't
+            sed -i "s|export $var_name=.*|export $var_name=\"$var_value\"|g" "$config_file"
         fi
-    fi
-}
-
-# Display usage information
-display_usage() {
-    echo -e "${BLUE}Agent-Balu has been installed. Here's how to use it:${NC}"
-    echo -e "${GREEN}Generate commit message:${NC} ai-commit --commit"
-    echo -e "${GREEN}Review code:${NC} ai-commit --review"
-    echo -e "${GREEN}Email management:${NC} ai-commit --email"
-    echo -e "${GREEN}Voice interaction:${NC} ai-commit --voice"
-    echo -e "${GREEN}Use local model:${NC} ai-commit --commit --local llama2"
-    echo ""
-    echo -e "${YELLOW}For more information, run:${NC} ai-commit --help"
-}
-
-# Main installation process
-main() {
-    detect_os
-    check_python
-    check_pip
-    
-    # Ask if user wants to use a virtual environment
-    read -p "Do you want to install in a virtual environment? (y/n): " USE_VENV_INPUT
-    if [[ "$USE_VENV_INPUT" == "y" || "$USE_VENV_INPUT" == "Y" ]]; then
-        USE_VENV="yes"
     else
-        USE_VENV="no"
+        # Add new variable
+        echo -e "${YELLOW}Adding $var_name to $config_file...${NC}"
+        echo "export $var_name=\"$var_value\"" >> "$config_file"
     fi
-    
-    install_agent_balu
-    configure_env
-    add_to_path
-    display_usage
-    
-    echo -e "${GREEN}Installation complete!${NC}"
 }
 
-# Run the main function
-main
+# Update environment variables
+update_env_var "AI_API_URL" "$API_API_URL" "$SHELL_CONFIG"
+update_env_var "AI_API_KEY" "$API_KEY" "$SHELL_CONFIG"
+
+echo -e "${GREEN}API credentials set successfully!${NC}"
+echo -e "${YELLOW}Note: You'll need to run 'source $SHELL_CONFIG' or restart your terminal for the changes to take effect in new sessions.${NC}"
+echo -e "${BLUE}source $SHELL_CONFIG${NC}"
+
+# Apply to current session
+export AI_API_URL="$API_API_URL"
+export AI_API_KEY="$API_KEY"
+echo -e "${GREEN}API credentials have also been applied to your current terminal session.${NC}"
+
+# Install the package
+echo -e "${BLUE}Installing Agent-Balu globally...${NC}"
+$PIP_CMD install -e .
+
+echo -e "${GREEN}Installation complete!${NC}"
+echo -e "${BLUE}You can now use Agent-Balu from anywhere by running:${NC}"
+echo -e "${YELLOW}ai-commit --commit${NC} - Generate commit messages"
+echo -e "${YELLOW}ai-commit --review${NC} - Review code changes"
+echo -e "${YELLOW}ai-commit --email${NC} - Manage emails"
+echo -e "${YELLOW}ai-commit --local llama2${NC} - Use local LLM model"
+
+echo -e "\n${GREEN}Thank you for installing Agent-Balu!${NC}"

@@ -1,29 +1,27 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["ai_commit"]
-
-[tool.setuptools.package-data]
-"ai_commit" = ["prompts/*.txt"]
 
 [project]
 name = "agent-balu"
 version = "0.1.0"
-description = "A multifunctional AI Agent for Git operations, code reviews, and email management"
-authors = [
-    {name = "Prakan", email = "prakan1684@gmail.com"}
-]
+description = "AI-powered Git commit message generator and code assistant"
 readme = "README.md"
-requires-python = ">=3.6"
+authors = [
+    {name = "Pranav Kandikonda", email = "your.email@example.com"}
+]
 license = {text = "MIT"}
-
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
 dependencies = [
-    "requests>=2.25.1",      
-    "argparse",              
-    "ollama>=0.1.0",
-    "SpeechRecognition>=3.8.1",
+    "requests>=2.25.0",
+    "ollama>=0.4.0",
+    "SpeechRecognition>=3.8.0",
+    "argparse",
     "pandas",
     "chardet"
 ]
@@ -36,4 +34,8 @@ voice = ["PyAudio>=0.2.11"]
 "Bug Tracker" = "https://github.com/prakan1684/Agent-Balu/issues"
 
 [project.scripts]
-ai-commit = "ai_commit.cli:main"
+ai-commit = "ai_commit.cli.cli:main"
+
+[tool.setuptools]
+packages = ["ai_commit"]
+package-data = { "ai_commit" = ["prompts/*.txt"] }
